@@ -89,4 +89,18 @@ input[:jugadores].each do |j|
   equipos[nombre_equipo][:jugadores] << jugador
 end
 
-p equipos
+# Complementar otros calculos por equipo:
+equipos.each do |k1, v1|
+  # Calculos por jugador:
+  v1[:jugadores].each do |jugador|
+    jugador[:bono_equipo] = (jugador[:bono] * DISTRIBUCION_BONO[:equipo]) * v1[:alcance]
+    if jugador[:bono_individual] + jugador[:bono_equipo] <= jugador[:bono]
+      jugador[:total_bono] = jugador[:bono_individual] + jugador[:bono_equipo]
+    else
+      jugador[:total_bono] = jugador[:bono]
+    end
+    jugador[:sueldo_completo] = jugador[:sueldo] + jugador[:total_bono]
+  end
+end
+
+p equipos.first
