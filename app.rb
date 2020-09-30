@@ -52,6 +52,11 @@ NIVELES = {
   "Cuauh" => 20
 }
 
+DISTRIBUCION_BONO = {
+  individual: 0.5,
+  equipo: 0.5
+}
+
 equipos = {}
 calculos_jugador = {
   alcance: 0.0, 
@@ -63,6 +68,7 @@ calculos_jugador = {
 # Verificar y agrupar jugadores por equipos:
 input[:jugadores].each do |j|
   jugador = {}
+  nivel_minimo = 0
   nombre_equipo = j[:equipo]
   unless equipos[nombre_equipo]
     equipos[nombre_equipo] = Hash.new
@@ -72,12 +78,13 @@ input[:jugadores].each do |j|
     equipos[nombre_equipo][:jugadores] = Array.new
   end
   # Calculos por jugador:
+  nivel_minimo = NIVELES[j[:nivel].capitalize]
   jugador = j.merge(calculos_jugador)
-  jugador[:alcance] = jugador[:goles].to_f / NIVELES[j[:nivel].capitalize]
-  jugador[:bono_individual] = jugador[:bono].to_f * 0.5 * jugador[:alcance]
+  jugador[:alcance] = jugador[:goles].to_f / nivel_minimo
+  jugador[:bono_individual] = jugador[:bono].to_f * DISTRIBUCION_BONO[:individual] * jugador[:alcance]
   # Calculos por equipo:
   equipos[nombre_equipo][:goles] += j[:goles]
-  equipos[nombre_equipo][:minimos] += NIVELES[j[:nivel].capitalize]
+  equipos[nombre_equipo][:minimos] += nivel_minimo
   equipos[nombre_equipo][:alcance] = equipos[nombre_equipo][:goles].to_f / equipos[nombre_equipo][:minimos].to_f
   equipos[nombre_equipo][:jugadores] << jugador
 end
