@@ -26,6 +26,26 @@ RSpec.describe Level do
         expect(search).to be_nil
       end
     end
+
+    describe '.load_levels' do
+      before(:each) do
+        Level.destroy_all
+      end
+
+      it 'with an input levels' do
+        levels = {
+          "A" => 5,
+          "B" => 10,
+        }.freeze
+        load_levels = Level.load_levels(levels)
+        expect(load_levels.size).to eq(levels.size)
+      end
+
+      it 'without an input levels' do
+        load_levels = Level.load_levels(nil)
+        expect(load_levels.size).to eq(LEVELS_DEFAULT.size)
+      end
+    end
   end
 
   describe 'instance methods' do
