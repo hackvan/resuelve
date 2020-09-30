@@ -1,6 +1,10 @@
 require 'json'
 require 'pry'
 
+require_relative 'classes/level'
+require_relative 'classes/team'
+require_relative 'classes/player'
+
 data = '{ "jugadores":
   [
     {
@@ -44,90 +48,46 @@ data = '{ "jugadores":
 
 # Parsear datos de entrada:
 input = JSON.parse(data, symbolize_names: true)
+jugadores = input[:jugadores]
 
-NIVELES = {
-  "A" => 5,
-  "B" => 10,
-  "C" => 15,
-  "Cuauh" => 20
-}
+# Cargar información de niveles:
+Level.load_levels(nil)
 
-DISTRIBUCION_BONO = {
-  individual: 0.5,
-  equipo: 0.5
-}
+# Obtener los equipos de los jugadores:
+equipos = jugadores.group_by { |j| j[:equipo] }
 
-equipos = {}
-calculos_jugador = {
-  alcance: 0.0, 
-  bono_individual: 0.0, 
-  bono_equipo: 0.0, 
-  total_bono: 0.0
-}
-
-# Verificar y agrupar jugadores por equipos:
-input[:jugadores].each do |j|
-  jugador = {}
-  nivel_minimo = 0
-  nombre_equipo = j[:equipo]
-  unless equipos[nombre_equipo]
-    equipos[nombre_equipo] = Hash.new
-    equipos[nombre_equipo][:goles] = 0
-    equipos[nombre_equipo][:minimos] = 0
-    equipos[nombre_equipo][:alcance] = 0.0
-    equipos[nombre_equipo][:jugadores] = Array.new
+# Cargar la información de equipos y jugadores:
+equipos.each do |equipo, jugadores|
+  team = Team.create(name: equipo)
+  jugadores.each do |jugador|
+    level = Level.find_by_name(jugador[:nivel])
+    player = Player.create(
+      name: jugador[:nombre],
+      salary: jugador[:sueldo], 
+      base_bonus: jugador[:bono],
+      goals_by_month: jugador[:goles],
+      level: level, 
+      team: team
+    )
   end
-  # Calculos por jugador:
-  nivel_minimo = NIVELES[j[:nivel].capitalize]
-  jugador = j.merge(calculos_jugador)
-  jugador[:alcance] = jugador[:goles].to_f / nivel_minimo
-  jugador[:bono_individual] = jugador[:bono].to_f * DISTRIBUCION_BONO[:individual] * jugador[:alcance]
-  # Calculos por equipo:
-  equipos[nombre_equipo][:goles] += j[:goles]
-  equipos[nombre_equipo][:minimos] += nivel_minimo
-  equipos[nombre_equipo][:alcance] = equipos[nombre_equipo][:goles].to_f / equipos[nombre_equipo][:minimos].to_f
-  equipos[nombre_equipo][:jugadores] << jugador
 end
 
+# Generar estructura del output:
 output = { jugadores: [] }
-
-# Complementar otros calculos por equipo:
-equipos.each do |k1, v1|
-  # Calculos por jugador:
-  v1[:jugadores].each do |jugador|
-    jugador[:bono_equipo] = (jugador[:bono] * DISTRIBUCION_BONO[:equipo]) * v1[:alcance]
-    if jugador[:bono_individual] + jugador[:bono_equipo] <= jugador[:bono]
-      jugador[:total_bono] = jugador[:bono_individual] + jugador[:bono_equipo]
-    else
-      jugador[:total_bono] = jugador[:bono]
-    end
-    jugador[:sueldo_completo] = jugador[:sueldo] + jugador[:total_bono]
-    # Generar estructura del output:
-    output[:jugadores] << { nombre: jugador[:nombre], 
-      goles_minimos: NIVELES[jugador[:nivel].capitalize],
-      goles: jugador[:goles],
-      sueldo: jugador[:sueldo],
-      bono: jugador[:bono],
-      sueldo_completo: jugador[:sueldo_completo],
-      equipo: jugador[:equipo]
+Team.all.each do |team|
+  team.players.each do |player|
+    output[:jugadores] << { 
+      nombre: player.name, 
+      goles_minimos: player.level_goals,
+      goles: player.goals_by_month,
+      sueldo: player.salary,
+      bono: player.total_bonus,
+      sueldo_completo: player.total_payment,
+      equipo: player.team_name
     }
   end
 end
 
-# Mostrar informacion en consola:
-equipos.each do |k, v|
-  puts "*" * 50
-  puts "Equipo: #{k.capitalize}"
-  puts "Total Goles: #{v[:goles]}"
-  puts "Total Minimos: #{v[:minimos]}"
-  puts "Alcance: #{v[:alcance] * 100}%"
-  puts "Total Jugadores: #{v[:jugadores].count}"
-  puts "-" * 50
-  v[:jugadores].each do |jugador|
-    puts ">> Nombre: #{jugador[:nombre]} - Sueldo Completo: #{jugador[:sueldo_completo].round(2)}"
-  end
-end
+output = JSON.generate(output)
 
-# Generar JSON de respuesta:
-puts
-puts JSON.generate(output)
+Team.print_stats
