@@ -43,7 +43,13 @@ data = '{ "jugadores":
       "sueldo_completo":null,
       "equipo":"rojo"
     }
-  ]
+  ],
+  "niveles": {
+    "A": 5,
+    "B": 10,
+    "C": 15,
+    "Cuauh": 20
+  }
 }'
 
 # Parsear datos de entrada:
@@ -51,7 +57,7 @@ input = JSON.parse(data, symbolize_names: true)
 jugadores = input[:jugadores]
 
 # Cargar información de niveles:
-Level.load_levels(nil)
+Level.load_levels(input[:niveles])
 
 # Obtener los equipos de los jugadores:
 equipos = jugadores.group_by { |j| j[:equipo] }
