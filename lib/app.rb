@@ -1,59 +1,22 @@
 require 'json'
-require 'pry'
 
 require_relative 'classes/level'
 require_relative 'classes/team'
 require_relative 'classes/player'
 
-data = '{ "jugadores":
-  [
-    {
-      "nombre":"Juan Perez",
-      "nivel":"C",
-      "goles":10,
-      "sueldo":50000,
-      "bono":25000,
-      "sueldo_completo":null,
-      "equipo":"rojo"
-    },
-    {
-      "nombre":"EL Cuauh",
-      "nivel":"Cuauh",
-      "goles":30,
-      "sueldo":100000,
-      "bono":30000,
-      "sueldo_completo":null,
-      "equipo":"azul"
-    },
-    {
-      "nombre":"Cosme Fulanito",
-      "nivel":"A",
-      "goles":7,
-      "sueldo":20000,
-      "bono":10000,
-      "sueldo_completo":null,
-      "equipo":"azul"
-    },
-    {
-      "nombre":"El Rulo",
-      "nivel":"B",
-      "goles":9,
-      "sueldo":30000,
-      "bono":15000,
-      "sueldo_completo":null,
-      "equipo":"rojo"
-    }
-  ],
-  "niveles": {
-    "A": 5,
-    "B": 10,
-    "C": 15,
-    "Cuauh": 20
-  }
-}'
+DEFAULT_INPUT  = '../data/input.json'.freeze
+DEFAULT_OUTPUT = '../data/output.json'.freeze
+
+# Cargar archivos con la informacion a procesar:
+path = File.expand_path(DEFAULT_INPUT, File.dirname(__FILE__))
+data = File.read(path)
 
 # Parsear datos de entrada:
+raise StandardError.new "Debe especificar los datos de ingreso para los calculos" unless data
 input = JSON.parse(data, symbolize_names: true)
+
+# Validar estructuras de entrada:
+raise StandardError.new "Es necesaria la lista de jugadores para los calculos" unless input[:jugadores]
 jugadores = input[:jugadores]
 
 # Cargar información de niveles:
@@ -69,10 +32,10 @@ equipos.each do |equipo, jugadores|
     level = Level.find_by_name(jugador[:nivel])
     player = Player.create(
       name: jugador[:nombre],
-      salary: jugador[:sueldo], 
+      salary: jugador[:sueldo],
       base_bonus: jugador[:bono],
       goals_by_month: jugador[:goles],
-      level: level, 
+      level: level,
       team: team
     )
   end
@@ -83,7 +46,7 @@ output = { jugadores: [] }
 Team.all.each do |team|
   team.players.each do |player|
     output[:jugadores] << { 
-      nombre: player.name, 
+      nombre: player.name,
       goles_minimos: player.level_goals,
       goles: player.goals_by_month,
       sueldo: player.salary,
@@ -94,6 +57,9 @@ Team.all.each do |team|
   end
 end
 
+# Exportar la información del output:
+path = File.expand_path(DEFAULT_OUTPUT, File.dirname(__FILE__))
+File.write(path, JSON.dump(output))
 output = JSON.generate(output)
 
 Team.print_stats
