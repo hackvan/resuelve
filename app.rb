@@ -89,6 +89,8 @@ input[:jugadores].each do |j|
   equipos[nombre_equipo][:jugadores] << jugador
 end
 
+output = { jugadores: [] }
+
 # Complementar otros calculos por equipo:
 equipos.each do |k1, v1|
   # Calculos por jugador:
@@ -100,6 +102,15 @@ equipos.each do |k1, v1|
       jugador[:total_bono] = jugador[:bono]
     end
     jugador[:sueldo_completo] = jugador[:sueldo] + jugador[:total_bono]
+    # Generar estructura del output:
+    output[:jugadores] << { nombre: jugador[:nombre], 
+      goles_minimos: NIVELES[jugador[:nivel].capitalize],
+      goles: jugador[:goles],
+      sueldo: jugador[:sueldo],
+      bono: jugador[:bono],
+      sueldo_completo: jugador[:sueldo_completo],
+      equipo: jugador[:equipo]
+    }
   end
 end
 
@@ -116,3 +127,7 @@ equipos.each do |k, v|
     puts ">> Nombre: #{jugador[:nombre]} - Sueldo Completo: #{jugador[:sueldo_completo].round(2)}"
   end
 end
+
+# Generar JSON de respuesta:
+puts
+puts JSON.generate(output)
