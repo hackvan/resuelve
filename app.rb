@@ -103,4 +103,16 @@ equipos.each do |k1, v1|
   end
 end
 
-p equipos.first
+# Mostrar informacion en consola:
+equipos.each do |k, v|
+  puts "*" * 50
+  puts "Equipo: #{k.capitalize}"
+  puts "Total Goles: #{v[:goles]}"
+  puts "Total Minimos: #{v[:minimos]}"
+  puts "Alcance: #{v[:alcance] * 100}%"
+  puts "Total Jugadores: #{v[:jugadores].count}"
+  puts "-" * 50
+  v[:jugadores].each do |jugador|
+    puts ">> Nombre: #{jugador[:nombre]} - Sueldo Completo: #{jugador[:sueldo_completo].round(2)}"
+  end
+end
