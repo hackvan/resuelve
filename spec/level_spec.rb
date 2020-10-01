@@ -2,6 +2,7 @@ require_relative '../lib/classes/level'
 
 RSpec.describe Level do
   before(:all) do
+    Level.destroy_all
     @level = Level.new(name: 'A', goals_by_month: 10)
   end
 
