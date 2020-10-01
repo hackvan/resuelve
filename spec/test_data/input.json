@@ -1,0 +1,13 @@
+{
+  "jugadores": [
+    {
+      "nombre": "Pepe",
+      "nivel": "C",
+      "goles": 10,
+      "sueldo": 100000,
+      "bono": 20000,
+      "sueldo_completo": null,
+      "equipo": "azul"
+    }
+  ]
+}
