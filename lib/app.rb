@@ -9,7 +9,7 @@ require_relative 'classes/player'
 DEFAULT_INPUT  = '../data/input.json'.freeze
 DEFAULT_OUTPUT = '../data/output.json'.freeze
 
-class App
+module App
   @@input_path =  File.expand_path(DEFAULT_INPUT,  File.dirname(__FILE__))
   @@output_path = File.expand_path(DEFAULT_OUTPUT, File.dirname(__FILE__))
 
