@@ -1,6 +1,6 @@
 # Resuelve
 
-Solución al [Problema](/problem.md) del equipo Resuelve FC.
+Solución al [Problema](/PROBLEM.md) del equipo Resuelve FC.
 
 ## Requisitos:
 ```bash
